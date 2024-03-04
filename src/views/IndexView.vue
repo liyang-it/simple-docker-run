@@ -40,13 +40,18 @@ const activeName = ref('build')
 }
 </style>
 <style>
+.dockerfile_main{
+  position: relative;
+}
+.dockerfile_copy{
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
 .dockerfile_content {
   background-color: #e9edf1;
   padding: 10px 5px;
   margin-bottom: 20px;
-}
-
-.dockerfile_content span {
   font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
   font-size: 13.6px;
   font-weight: 400;
@@ -65,4 +70,6 @@ const activeName = ref('build')
   color: #676767;
   
 }
+
+
 </style>

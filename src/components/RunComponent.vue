@@ -1,5 +1,6 @@
 <script setup>
-import { reactive, computed } from 'vue'
+import { reactive, computed} from 'vue'
+
 // springboot表单
 const form = reactive({
   NAME: "run-docker-demo",
@@ -10,12 +11,14 @@ const form = reactive({
   MOUNTS: [],
   COMMAND: "",
   entrypoint: "",
+  net: "bridge",
   restart: "no",
   minMemory: "",
   maxMemory: "512",
   cpus: "2"
 
 })
+
 // 添加端口
 function addPort() {
   form.PORTS.push({ 'local': "", "container": "", "agreement": ['TCP'] })
@@ -52,6 +55,7 @@ const dockerFileConter = computed(() => {
   let restart = ""
   let maxMemory = ""
   let cpu = ""
+  let net = ""
   let name = ""
   let images = ""
 
@@ -90,6 +94,9 @@ const dockerFileConter = computed(() => {
   // CPU
   cpu = `--cpus=${form.cpus} `
 
+  // 网络模式
+  net = `--net=${form.net} `
+
   // 容器名称
   name = `--name ${form.NAME} `
 
@@ -97,7 +104,7 @@ const dockerFileConter = computed(() => {
   images = ` ${form.image}`
 
   // run
-  htmlArray.push(`<p><span class="parameter">docker run -d </span> <span class="value">${ports.join("")}${mounts.join("")}${restart}${maxMemory}${cpu}${name}${images} </span></p>`)
+  htmlArray.push(`<p><span class="parameter">docker run -d </span> <span class="value">${ports.join("")}${mounts.join("")}${restart}${maxMemory}${cpu}${net}${name}${images} </span></p>`)
   return htmlArray.join("")
 })
 // 换行
@@ -107,8 +114,8 @@ const dockerFileLineConter = computed(() => {
   htmlArray.push(`<span class="annotation"># Docker run 命令 换行</span><br/>`)
 
   // 第一行run
-  htmlArray.push('<p><span class="parameter">docker run  \\</p>')
-  htmlArray.push('<p><span class="value">-d  \\</p>')
+  htmlArray.push('<span class="parameter">docker run  \\<br/>')
+  htmlArray.push('<span class="value">-d  \\<br/>')
 
   // 端口
   for (let i = 0, size = form.PORTS.length; i < size; i++) {
@@ -116,13 +123,13 @@ const dockerFileLineConter = computed(() => {
       // tcp还是udp
       if (form.PORTS[i].agreement.length === 0) {
         // 两个都没有选择默认 tcp
-        htmlArray.push(`<p><span class="value">-p ${form.PORTS[i].local}:${form.PORTS[i].container}/tcp \\</p>`)
+        htmlArray.push(`<span class="value">-p ${form.PORTS[i].local}:${form.PORTS[i].container}/tcp \\<br/>`)
       } else {
         for (let a = 0; a < form.PORTS[i].agreement.length; a++) {
           if (form.PORTS[i].agreement[a] === 'TCP' || form.PORTS[i].agreement[a] === 'tcp') {
-            htmlArray.push(`<p><span class="value">-p ${form.PORTS[i].local}:${form.PORTS[i].container}/tcp \\</p>`)
+            htmlArray.push(`<span class="value">-p ${form.PORTS[i].local}:${form.PORTS[i].container}/tcp \\<br/>`)
           } else {
-            htmlArray.push(`<p><span class="value">-p ${form.PORTS[i].local}:${form.PORTS[i].container}/udp \\</p>`)
+            htmlArray.push(`<span class="value">-p ${form.PORTS[i].local}:${form.PORTS[i].container}/udp \\<br/>`)
           }
         }
       }
@@ -133,34 +140,37 @@ const dockerFileLineConter = computed(() => {
   // 挂载
   for (let i = 0, size = form.MOUNTS.length; i < size; i++) {
     if (form.MOUNTS[i].local.length !== 0 && form.MOUNTS[i].container.length !== 0) {
-      htmlArray.push(`<p><span class="value">-v ${form.MOUNTS[i].local}:${form.MOUNTS[i].container} \\</p>`)
+      htmlArray.push(`<span class="value">-v ${form.MOUNTS[i].local}:${form.MOUNTS[i].container} \\<br/>`)
     }
   }
 
   // 重启规则
-  htmlArray.push(`<p><span class="value">--restart=${form.restart} \\</p>`)
+  htmlArray.push(`<span class="value">--restart=${form.restart} \\<br/>`)
 
   // 最小内存
-  // htmlArray.push(`<p><span class="value">--memory-reservation="${form.minMemory}m" \\</p>`)
+  // htmlArray.push(`<span class="value">--memory-reservation="${form.minMemory}m" \\<br/>`)
 
   // 最大内存
-  htmlArray.push(`<p><span class="value">--memory ${form.maxMemory}m \\</p>`)
+  htmlArray.push(`<span class="value">--memory ${form.maxMemory}m \\<br/>`)
 
   // CPU
-  htmlArray.push(`<p><span class="value">--cpus=${form.cpus} \\</p>`)
+  htmlArray.push(`<span class="value">--cpus=${form.cpus} \\<br/>`)
+
+  // 网络模式
+  htmlArray.push(`<span class="value">--net=${form.net} \\<br/>`)
 
   // 容器名称
-  htmlArray.push(`<p><span class="value">--name ${form.NAME} \\</p>`)
+  htmlArray.push(`<span class="value">--name ${form.NAME} \\<br/>`)
 
   // 镜像
-  htmlArray.push(`<p><span class="value"> ${form.image}</p>`)
+  htmlArray.push(`<span class="value"> ${form.image}<br/>`)
 
   return htmlArray.join("")
 })
 </script>
 <template>
   <div>
-    <el-form :model="form" label-width="200px">
+    <el-form :model="form" label-width="200px" :options="editorOption" >
       <el-form-item label="容器运行名称">
         <el-tooltip class="box-item" effect="dark" content="容器名称" placement="top-start">
           <el-input v-model="form.NAME" />
@@ -233,6 +243,12 @@ const dockerFileLineConter = computed(() => {
           <el-radio label="on-failure:5" size="small">失败后重启(重启5次)</el-radio>
         </el-radio-group>
       </el-form-item>
+      <el-form-item label="网络模式">
+        <el-radio-group v-model="form.net">
+          <el-radio label="bridge" size="small">独立网卡(容器内无法访问宿主机内网，只能公网地址)</el-radio>
+          <el-radio label="host" size="small">使用宿主机网络(端口映射失效,容器程序会直接占用宿主机端口)</el-radio>
+        </el-radio-group>
+      </el-form-item>
       <!-- <el-form-item label="容器分配最小内存(单位mb)">
         <el-input v-model="form.minMemory" />
       </el-form-item> -->
@@ -247,8 +263,15 @@ const dockerFileLineConter = computed(() => {
     <h2>Docker run命令</h2>
     <a class="description" href="https://blog.csdn.net/qq_40739917/article/details/135400392"
       target="_blank">更多Docker命令</a>
-    <div class="dockerfile_content" v-html="dockerFileConter" />
-    <div class="dockerfile_content" v-html="dockerFileLineConter" />
+     <div class="dockerfile_main">
+      <!-- <el-button type="info" size="small" class="dockerfile_copy">复制</el-button> -->
+      <pre class="dockerfile_content" v-html="dockerFileConter" />
+     </div> 
+     <div  class="dockerfile_main">
+      <!-- <el-button type="info" size="small" class="dockerfile_copy">复制</el-button> -->
+      <pre class="dockerfile_content" v-html="dockerFileLineConter" />
+     </div>
+
   </div>
 </template>
 <style scoped>
