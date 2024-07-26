@@ -5,7 +5,7 @@ const form = reactive({
   NAME: "run-docker-demo",
   JERNAME: "demo.jar",
   JARWORKDIR: "E:/jar",
-  FROM: "openjdk:8-jdk-alpine",
+  FROM: "bellsoft/liberica-runtime-container:jdk8-alpine",
   WORKDIR: "/app",
   EXPOSE: "8080",
   VERSION: "0.0.1",
@@ -83,6 +83,11 @@ const dockerFileConter = computed(() => {
       </el-form-item>
       <el-form-item label="FROM(JDK版本)">
         <el-radio-group v-model="form.FROM" class="ml-4">
+          <el-radio label="bellsoft/liberica-runtime-container:jre8-alpine">LibericaJre8</el-radio>
+          <el-radio label="bellsoft/liberica-runtime-container:jdk8-alpine">LibericaJdk8</el-radio>
+          <el-radio label="bellsoft/liberica-runtime-container:jdk17-alpine">LibericaJdk17</el-radio>
+          <el-radio label="bellsoft/liberica-runtime-container:jdk21-alpine">LibericaJdk21</el-radio>
+
           <el-radio label="openjdk:8-jdk-alpine">OpenJdk8</el-radio>
           <el-radio label="openjdk:17-jdk-alpine">OpenJdk17</el-radio>
           <el-radio label="openjdk:21-jdk-alpine">OpenJdk21</el-radio>
